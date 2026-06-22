@@ -1,9 +1,8 @@
 import random
 import pygame
+from games import BaseGame
 
 GAME_TITLE = "Carrera de Obstáculos"
-SCREEN_W = 1280
-SCREEN_H = 720
 GRAVITY = 1.2
 JUMP_FORCE = -15.6
 
@@ -90,17 +89,18 @@ def spawn_obstacle_pair(start_x, sizes, ground_y, gap_variants):
     return obstacles
 
 
-class CarreraDeObstaculos:
+class CarreraDeObstaculos(BaseGame):
+    # Hereda `S_WIDTH`, `S_HEIGHT`, `FPS` de `BaseGame` (tomados de `Settings`).
+
     def __init__(self):
-        self.screen = None
-        self.running = True
-        self.ground_y = SCREEN_H - 120
+        super().__init__()
+        self.ground_y = self.S_HEIGHT - 120
         self.player = Player(70, self.ground_y - 72, 53, 72, self.ground_y)
         self.gap_variants = [int(self.player.rect.width * 1.2) + 220,
                              int(self.player.rect.width * 1.2) + 140,
                              int(self.player.rect.width * 1.2) + 20]
         self.obstacles = spawn_obstacle_pair(
-            SCREEN_W + random.randint(120, 260),
+            self.S_WIDTH + random.randint(120, 260),
             [(34, 48), (38, 66)],
             self.ground_y,
             self.gap_variants,
@@ -115,15 +115,15 @@ class CarreraDeObstaculos:
         self.screen = screen
 
     def _stop_context(self):
-        self.running = False
+        super()._stop_context()
 
     def stop(self):
-        self.running = False
+        super().stop()
 
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.QUIT:
-                self.running = False
+                self.stop()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_w:
                 self.player.jump()
             if event.type == pygame.KEYUP and event.key == pygame.K_w:
@@ -138,13 +138,13 @@ class CarreraDeObstaculos:
         for obs in self.obstacles:
             obs.update(self.speed)
             if self.player.rect.colliderect(obs.rect):
-                self.running = False
+                self.stop()
                 return
 
         displayed_score = self.score // 10
         if displayed_score >= self.next_diagonal_trigger and self.diagonal_obstacle is None:
             self.diagonal_obstacle = DiagonalObstacle(
-                SCREEN_W - 40,
+                self.S_WIDTH - 40,
                 32,
                 32,
                 self.ground_y,
@@ -156,14 +156,14 @@ class CarreraDeObstaculos:
         if self.diagonal_obstacle:
             self.diagonal_obstacle.update()
             if self.player.rect.colliderect(self.diagonal_obstacle.rect):
-                self.running = False
-                return
-            if self.diagonal_obstacle.rect.right < 0 or self.diagonal_obstacle.rect.top > SCREEN_H:
+                    self.stop()
+                    return
+            if self.diagonal_obstacle.rect.right < 0 or self.diagonal_obstacle.rect.top > self.S_HEIGHT:
                 self.diagonal_obstacle = None
 
         if max(o.rect.right for o in self.obstacles) < 0:
             self.obstacles = spawn_obstacle_pair(
-                SCREEN_W + random.randint(120, 260),
+                self.S_WIDTH + random.randint(120, 260),
                 [(34, 48), (38, 66)],
                 self.ground_y,
                 self.gap_variants,
@@ -186,7 +186,7 @@ class CarreraDeObstaculos:
         if self.diagonal_obstacle:
             self.diagonal_obstacle.draw(self.screen)
 
-        pygame.draw.line(self.screen, (120, 120, 120), (0, self.ground_y), (SCREEN_W, self.ground_y), 2)
+        pygame.draw.line(self.screen, (120, 120, 120), (0, self.ground_y), (self.S_WIDTH, self.ground_y), 2)
         score_text = self.font.render(f"Score: {self.score // 10}", True, (0, 0, 0))
         self.screen.blit(score_text, (20, 20))
 
