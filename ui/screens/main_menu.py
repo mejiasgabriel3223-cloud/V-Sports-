@@ -76,21 +76,40 @@ class MainMenu:
         return None
 
     def draw(self, screen: pygame.Surface) -> None:
-        screen.fill(Settings.BACKGROUND_COLOR)
-        font = AssetManager.get_asset("font")
-        if not font:
-            font = pygame.font.Font(None, 36)
+        background = AssetManager.get_asset("menu_background")
+        if background:
+            screen.blit(pygame.transform.scale(background, (Settings.S_WIDTH, Settings.S_HEIGHT)), (0, 0))
+        else:
+            screen.fill(Settings.BACKGROUND_COLOR)
 
-        title = font.render("V-Sports Launcher", True, Settings.HIGHLIGHT_COLOR)
-        screen.blit(title, (60, 40))
+        list_panel_rect = pygame.Rect(40, self.menu_top - 20, 620, self.visible_rows * self.row_height + 60)
+        pygame.draw.rect(screen, (25, 25, 25), list_panel_rect, border_radius=18)
+        pygame.draw.rect(screen, Settings.HIGHLIGHT_COLOR, list_panel_rect, 2, border_radius=18)
+
+        title_label_font = AssetManager.get_font(30)
+        title_label = title_label_font.render("Juegos", True, (255, 255, 255))
+        screen.blit(title_label, (list_panel_rect.x + 24, list_panel_rect.y - 36))
+
+        details_panel_rect = pygame.Rect(Settings.S_WIDTH - 440, 100, 420, 560)
+        pygame.draw.rect(screen, (25, 25, 25), details_panel_rect, border_radius=18)
+        pygame.draw.rect(screen, Settings.HIGHLIGHT_COLOR, details_panel_rect, 2, border_radius=18)
+
+        details_content_rect = pygame.Rect(details_panel_rect.x + 18, details_panel_rect.y + 18, details_panel_rect.width - 36, details_panel_rect.height - 36)
+        pygame.draw.rect(screen, (35, 35, 35), details_content_rect, border_radius=16)
+
+        font = AssetManager.get_font(28)
 
         visible_end = min(self.scroll_offset + self.visible_rows, len(self.games_list))
         for index in range(self.scroll_offset, visible_end):
             game = self.games_list[index]
             label = f"> {game.get('title', 'Juego sin nombre')}" if index == self.selected_index else game.get('title', 'Juego sin nombre')
             color = Settings.HIGHLIGHT_COLOR if index == self.selected_index else Settings.TEXT_COLOR
+            y = self.menu_top + (index - self.scroll_offset) * self.row_height
+            if index == self.selected_index:
+                row_rect = pygame.Rect(60, y - 4, 560, self.row_height - 8)
+                pygame.draw.rect(screen, (45, 45, 45), row_rect, border_radius=12)
             text = font.render(label, True, color)
-            screen.blit(text, (80, self.menu_top + (index - self.scroll_offset) * self.row_height))
+            screen.blit(text, (80, y))
 
         pygame.draw.rect(screen, (220, 50, 50), self.quit_button_rect)
         pygame.draw.rect(screen, Settings.HIGHLIGHT_COLOR, self.quit_button_rect, 2)
@@ -120,23 +139,27 @@ class MainMenu:
             cover = pygame.transform.scale(cover, (380, 260))
             cover_x = Settings.S_WIDTH - 420
             cover_y = 120
+            cover_card_rect = pygame.Rect(cover_x - 6, cover_y - 6, 392, 272)
+            pygame.draw.rect(screen, (10, 10, 10), cover_card_rect, border_radius=20)
+            pygame.draw.rect(screen, Settings.HIGHLIGHT_COLOR, cover_card_rect, 2, border_radius=20)
             screen.blit(cover, (cover_x, cover_y))
-            pygame.draw.rect(screen, Settings.HIGHLIGHT_COLOR, (cover_x, cover_y, 380, 260), 2)
+            pygame.draw.rect(screen, Settings.HIGHLIGHT_COLOR, (cover_x, cover_y, 380, 260), 2, border_radius=18)
 
             info_x = cover_x
             info_y = cover_y + 280
             title_font = pygame.font.Font(None, 40)
-            text_font = pygame.font.Font(None, 32)
+            text_font = AssetManager.get_font(20)
 
             screen.blit(title_font.render(title_text, True, Settings.HIGHLIGHT_COLOR), (info_x, info_y))
-            info_y += 50
-            info_y = self._render_multiline(screen, description, text_font, Settings.TEXT_COLOR, info_x, info_y, 360, 38)
-            info_y += 10
+            info_y += 44
+            info_y = self._render_multiline(screen, description, text_font, Settings.TEXT_COLOR, info_x, info_y, 360, 26)
+            info_y += 8
             screen.blit(text_font.render("Autores:", True, Settings.TEXT_COLOR), (info_x, info_y))
-            info_y += 40
+            info_y += 32
             screen.blit(text_font.render(", ".join(authors), True, Settings.TEXT_COLOR), (info_x, info_y))
-            info_y += 50
+            info_y += 40
             screen.blit(text_font.render(f"Grupo: {group}", True, Settings.TEXT_COLOR), (info_x, info_y))
 
-        hint = font.render("Flechas ARRIBA/ABAJO para cambiar de juego", True, Settings.TEXT_COLOR)
+        hint_font = AssetManager.get_font(20)
+        hint = hint_font.render("Flechas ARRIBA/ABAJO para cambiar de juego", True, Settings.TEXT_COLOR)
         screen.blit(hint, (80, Settings.S_HEIGHT - 80))
