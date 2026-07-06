@@ -4,10 +4,16 @@ from core.managers.asset_manager import AssetManager
 from core.settings import Settings
 
 
+def _get_font(size: int) -> pygame.font.Font:
+    if hasattr(AssetManager, "get_font"):
+        return AssetManager.get_font(size)
+    return pygame.font.Font(None, size)
+
+
 class StartScreen:
     def __init__(self) -> None:
         self.font_title = pygame.font.Font(None, 64)
-        self.font_text = AssetManager.get_font(32)
+        self.font_text = _get_font(32)
 
     def handle_events(self, events):
         for event in events:
@@ -35,5 +41,5 @@ class StartScreen:
             title = self.font_title.render("Bienvenido a V-Sports", True, Settings.HIGHLIGHT_COLOR)
             screen.blit(title, (Settings.S_WIDTH // 2 - title.get_width() // 2, Settings.S_HEIGHT // 2 - 120))
 
-        subtitle = AssetManager.get_font(32).render("Presiona ENTER para abrir el launcher", True, Settings.TEXT_COLOR)
+        subtitle = _get_font(32).render("Presiona ENTER para abrir el launcher", True, Settings.TEXT_COLOR)
         screen.blit(subtitle, (Settings.S_WIDTH // 2 - subtitle.get_width() // 2, Settings.S_HEIGHT // 2 + 140))

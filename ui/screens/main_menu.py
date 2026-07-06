@@ -5,6 +5,12 @@ from core.managers.asset_manager import AssetManager
 from core.settings import Settings
 
 
+def _get_font(size: int) -> pygame.font.Font:
+    if hasattr(AssetManager, "get_font"):
+        return AssetManager.get_font(size)
+    return pygame.font.Font(None, size)
+
+
 class MainMenu:
     def __init__(self, games_list: List[dict]) -> None:
         self.games_list = list(games_list)
@@ -86,7 +92,7 @@ class MainMenu:
         pygame.draw.rect(screen, (25, 25, 25), list_panel_rect, border_radius=18)
         pygame.draw.rect(screen, Settings.HIGHLIGHT_COLOR, list_panel_rect, 2, border_radius=18)
 
-        title_label_font = AssetManager.get_font(30)
+        title_label_font = _get_font(30)
         title_label = title_label_font.render("Juegos", True, (255, 255, 255))
         screen.blit(title_label, (list_panel_rect.x + 24, list_panel_rect.y - 36))
 
@@ -97,7 +103,7 @@ class MainMenu:
         details_content_rect = pygame.Rect(details_panel_rect.x + 18, details_panel_rect.y + 18, details_panel_rect.width - 36, details_panel_rect.height - 36)
         pygame.draw.rect(screen, (35, 35, 35), details_content_rect, border_radius=16)
 
-        font = AssetManager.get_font(28)
+        font = _get_font(28)
 
         visible_end = min(self.scroll_offset + self.visible_rows, len(self.games_list))
         for index in range(self.scroll_offset, visible_end):
@@ -148,7 +154,7 @@ class MainMenu:
             info_x = cover_x
             info_y = cover_y + 280
             title_font = pygame.font.Font(None, 40)
-            text_font = AssetManager.get_font(20)
+            text_font = _get_font(20)
 
             screen.blit(title_font.render(title_text, True, Settings.HIGHLIGHT_COLOR), (info_x, info_y))
             info_y += 44
@@ -160,6 +166,6 @@ class MainMenu:
             info_y += 40
             screen.blit(text_font.render(f"Grupo: {group}", True, Settings.TEXT_COLOR), (info_x, info_y))
 
-        hint_font = AssetManager.get_font(20)
+        hint_font = _get_font(20)
         hint = hint_font.render("Flechas ARRIBA/ABAJO para cambiar de juego", True, Settings.TEXT_COLOR)
         screen.blit(hint, (80, Settings.S_HEIGHT - 80))

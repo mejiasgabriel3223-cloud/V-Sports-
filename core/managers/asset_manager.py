@@ -7,8 +7,9 @@ from core.settings import Settings
 
 
 class AssetManager:
-    _assets: Dict[str, pygame.Surface] = {}
+    _assets: Dict[str, object] = {}
     _covers: Dict[str, pygame.Surface] = {}
+    _font_path: Optional[str] = None
 
     @classmethod
     def load_all_assets(cls) -> None:
@@ -16,9 +17,30 @@ class AssetManager:
             pygame.init()
         if not pygame.font.get_init():
             pygame.font.init()
-        cls._assets = {
-            "font": pygame.font.Font(None, 36),
-        }
+
+        cls._font_path = Settings.FONT_PATH if os.path.exists(Settings.FONT_PATH) else None
+        if cls._font_path:
+            cls._assets["font"] = pygame.font.Font(cls._font_path, 36)
+        else:
+            cls._assets["font"] = pygame.font.Font(None, 36)
+
+        if os.path.exists(Settings.MENU_BACKGROUND_IMAGE):
+            background = pygame.image.load(Settings.MENU_BACKGROUND_IMAGE)
+            try:
+                if pygame.display.get_init() and pygame.display.get_surface():
+                    background = background.convert()
+            except pygame.error:
+                pass
+            cls._assets["menu_background"] = pygame.transform.scale(background, (Settings.S_WIDTH, Settings.S_HEIGHT))
+        if os.path.exists(Settings.MAIN_TITLE_IMAGE):
+            title_image = pygame.image.load(Settings.MAIN_TITLE_IMAGE)
+            try:
+                title_image = title_image.convert_alpha()
+            except pygame.error:
+                pass
+            max_width = min(800, title_image.get_width())
+            image_height = int(title_image.get_height() * max_width / title_image.get_width())
+            cls._assets["main_title_image"] = pygame.transform.smoothscale(title_image, (max_width, image_height))
 
     @classmethod
     def load_game_covers(cls, games: List[dict]) -> None:
@@ -51,6 +73,12 @@ class AssetManager:
     @classmethod
     def get_asset(cls, name: str):
         return cls._assets.get(name)
+
+    @classmethod
+    def get_font(cls, size: int) -> pygame.font.Font:
+        if cls._font_path and os.path.exists(cls._font_path):
+            return pygame.font.Font(cls._font_path, size)
+        return pygame.font.Font(None, size)
 
     @classmethod
     def get_cover(cls, game_id: str) -> pygame.Surface:

@@ -21,6 +21,8 @@ class Engine:
         AssetManager.load_all_assets()
         AssetManager.load_game_covers(found_games)
 
+        self.menu_music_path = SoundPlayer.play_music()
+
         self.games_list = found_games
         self.launcher_manager = GameLauncher()
         self.active_game = None
@@ -93,8 +95,10 @@ class Engine:
 
     def _start_game_session(self, game_data):
         if pygame.mixer.get_init():
-            pygame.mixer.music.stop()
-            pygame.mixer.music.unload()
+            try:
+                pygame.mixer.music.stop()
+            except Exception:
+                pass
 
         instance = self.launcher_manager.start(game_data)
 
@@ -113,8 +117,10 @@ class Engine:
             self.launcher_manager.stop()
 
             if pygame.mixer.get_init():
-                pygame.mixer.music.stop()
-                pygame.mixer.music.unload()
+                try:
+                    pygame.mixer.music.stop()
+                except Exception:
+                    pass
 
             SoundPlayer.stop_all()
 
@@ -124,7 +130,10 @@ class Engine:
             self.current_state = "MAIN_MENU"
             self.screen = pygame.display.set_mode((Settings.S_WIDTH, Settings.S_HEIGHT))
             pygame.display.set_caption(Settings.TITLE)
-            SoundPlayer.play_music("menu")
+            if self.menu_music_path:
+                SoundPlayer.play_music(self.menu_music_path)
+            else:
+                SoundPlayer.play_music()
 
     def draw(self):
         if self.current_state == "IN_GAME" and self.active_game:
