@@ -43,4 +43,5 @@ class StartScreen:
 
         # Subtitle prompt over the background
         subtitle = _get_font(32).render("Presiona ENTER para inicializar el launcher", True, Settings.TEXT_COLOR)
-        screen.blit(subtitle, (Settings.S_WIDTH // 2 - subtitle.get_width() // 2, Settings.S_HEIGHT // 2 + 140))
+        subtitle_y = Settings.S_HEIGHT // 2 - subtitle.get_height() // 2
+        screen.blit(subtitle, (Settings.S_WIDTH // 2 - subtitle.get_width() // 2, subtitle_y))
