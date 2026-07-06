@@ -14,7 +14,7 @@ class Settings:
     ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
     FONT_PATH = os.path.join(ASSETS_DIR, "font", "Font.otf")
     MENU_BACKGROUND_IMAGE = os.path.join(ASSETS_DIR, "decoration", "Background.jpeg")
-    MAIN_TITLE_IMAGE = os.path.join(ASSETS_DIR, "decoration", "Main title.jpeg")
+    MAIN_TITLE_IMAGE = os.path.join(ASSETS_DIR, "decoration", "Title.jpeg")
     MUSIC_FILES = [
         os.path.join(ASSETS_DIR, "music", "Changing-Seasons.mp3"),
         os.path.join(ASSETS_DIR, "music", "Everything-Everything.mp3"),
