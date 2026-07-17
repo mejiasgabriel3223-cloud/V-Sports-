@@ -14,19 +14,6 @@ def _get_font(size: int) -> pygame.font.Font:
 class MainMenu:
     def __init__(self, games_list: List[dict]) -> None:
         self.games_list = list(games_list)
-        for i in range(1, 13):
-            self.games_list.append(
-                {
-                    "id": f"ghost_game_{i}",
-                    "title": f"Juego Fantasma {i}",
-                    "description": "Juego de prueba para navegación.",
-                    "authors": [],
-                    "group_number": "",
-                    "instance": None,
-                    "cover_path": None,
-                    "ghost": True,
-                }
-            )
         self.selected_index = 0
         self.quit_button_rect = pygame.Rect(Settings.S_WIDTH - 140, 20, 120, 40)
         self.menu_top = 120
@@ -63,10 +50,14 @@ class MainMenu:
                     mouse_pos = pygame.mouse.get_pos()
                     if self.quit_button_rect.collidepoint(mouse_pos):
                         return "QUIT"
-                    selected = self.games_list[self.selected_index]
-                    if selected.get("ghost"):
-                        return None
-                    return {"action": "LAUNCH", "game_data": selected}
+                    
+                    # CORRECCIÓN: Volvemos a poner la lógica para lanzar el juego
+                    if self.games_list:
+                        selected = self.games_list[self.selected_index]
+                        if selected.get("ghost"):
+                            return None
+                        return {"action": "LAUNCH", "game_data": selected}
+                        
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self.quit_button_rect.collidepoint(event.pos):
                     return "QUIT"
@@ -128,18 +119,14 @@ class MainMenu:
             ),
         )
 
+        # CORRECCIÓN: Verificamos que haya juegos y declaramos 'selected' antes de sacar su info
         if self.games_list:
             selected = self.games_list[self.selected_index]
-            if selected.get("ghost"):
-                title_text = selected.get("title", "")
-                description = "Juego fantasma de prueba. No se puede iniciar."
-                authors = []
-                group = ""
-            else:
-                title_text = selected.get("title", "")
-                description = selected.get("description", "")
-                authors = selected.get("authors", [])
-                group = selected.get("group_number", "")
+            
+            title_text = selected.get("title", "")
+            description = selected.get("description", "")
+            authors = selected.get("authors", [])
+            group = selected.get("group_number", "")
 
             cover = AssetManager.get_cover(selected.get("id", ""))
             cover = pygame.transform.scale(cover, (380, 260))
