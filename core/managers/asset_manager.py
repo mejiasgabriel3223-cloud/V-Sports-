@@ -46,9 +46,10 @@ class AssetManager:
     def load_game_covers(cls, games: List[dict]) -> None:
         for game in games:
             game_folder_path = game.get("folder_path")
+            print(f"{game_folder_path}")
             if game_folder_path and os.path.exists(game_folder_path):
-                cover_path = os.path.join(game_folder_path, "assets", "cover") #El cover del juego debe estar en una carpeta cover dentro de assets
-                
+                cover_path = os.path.join(game_folder_path, "assets", "cover", "launcher_cover") #El cover del juego debe estar en una carpeta cover dentro de assets, teniendo el nombre launcher_cover
+
                 if os.path.exists(cover_path):
                     cls._covers[game["folder"]] = pygame.image.load(cover_path).convert_alpha()
                     continue

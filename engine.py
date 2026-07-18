@@ -47,23 +47,14 @@ class Engine:
             pygame.event.clear()
 
     def _invoke_game_subprocess(self, main_path, working_directory):
-        "Abre una ventana de comandos independiente segun el sistema operativo"
-        "para ejecutar el juego solicitado de forma aislada como subproceso"
+        """Permite ejecutar el juego solicitado de forma aislada como subproceso"""
         
         #MANEJO DE SUBPORCESOS MULTIPLATAFORMA
 
-        #Windows, usa la api nativa para duplicar y abrir consolas independientes
-        if sys.platform == "win32":
-            subprocess.run(
-                [sys.executable, main_path],
-                cwd=working_directory,
-                creationflags=subprocess.CREATE_NEW_CONSOLE
-            )
-        #Caso para MacOS o Linux, se ejecuta el proceso de python directamente en el hilo actual del launcher
-        #Por falta de api nativa para creacion de una terminal nueva que congele los procesos del launcher
-        else:
-            subprocess.run(
-                [sys.executable, main_path],
-                cwd=working_directory
-            )
+        #Ejecuta el subproceso en el mismo hilo de terminal del launcher, congelando asi el launcher hasta salir del juego elegido
+        #Compatible con cualquier OS
+        subprocess.run(
+            [sys.executable, main_path],
+            cwd=working_directory
+        )
             
