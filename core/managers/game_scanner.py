@@ -1,52 +1,51 @@
-import importlib
 import os
-import sys
-from typing import List
-
+import json
+import ast
 
 class GameScanner:
-    def __init__(self, games_dir: str = "games") -> None:
-        self.games_dir = games_dir
+    """ 
+    Clase utilitaria para escanear archivos del disco duro y 
+    cargar los archivos de configuracion de los juegos
+    """
+    
+    @staticmethod
+    def scan_and_load_metadata(base_path: str):
+        """
+        Escanea el directorio de juegos, detecta proyectos con 'main.py'
+        y convierte sus archivos 'metadata.json'  en diccionarios de RAM
+        """
+        if not os.path.exists(base_path):
+            os.makedirs(base_path)
 
-    def _import_game_module(self, module_name: str):
-        try:
-            module_path = f"{self.games_dir}.{module_name}"
-            if module_path in sys.modules:
-                return importlib.reload(sys.modules[module_path])
-            return importlib.import_module(module_path)
-        except Exception as exc:
-            print(f"No se pudo importar el juego '{module_name}': {exc}")
-            return None
+        catalog = []
 
-    def get_games_metadata(self) -> List[dict]:
-        games = []
-        if not os.path.isdir(self.games_dir):
-            return games
+        for folder in os.listdir(base_path):
+            folder_path = os.path.join(base_path, folder)
 
-        for filename in sorted(os.listdir(self.games_dir)):
-            if not filename.endswith(".py") or filename.startswith("__"):
-                continue
+            #Para que se añada un juego debe existir su carpeta y debe contener un main.py
+            if os.path.isdir(folder_path) and "main.py" in os.listdir(folder_path):
+                json_path = os.path.join(folder_path, "metadata.json")
 
-            module_name = os.path.splitext(filename)[0]
-            module = self._import_game_module(module_name)
-            if module is None:
-                continue
-
-            metadata = getattr(module, "GAME_METADATA", None)
-            game_class = getattr(module, "CarreraDeObstaculos", None) or getattr(module, "GAME_CLASS", None)
-            if not metadata or not game_class:
-                continue
-
-            games.append(
-                {
-                    "id": metadata.get("id", module_name),
-                    "title": metadata.get("title", module_name),
-                    "description": metadata.get("description", ""),
-                    "authors": metadata.get("authors", []),
-                    "group_number": metadata.get("group_number"),
-                    "instance": game_class,
-                    "cover_path": metadata.get("cover_path"),
+                #Diccionario base con valores por defecto
+                metadata = {
+                    "folder": folder,
+                    "folder_path": folder_path,
+                    "title": folder.replace("_", " "),
+                    "description": "No se encontró descripción en metadata.json",
+                    "authors": "Desconocido",
+                    "group_number": "Desconocido",            
+                    "controls": "No fueron especificados los controles en metadata.json"
                 }
-            )
 
-        return games
+                if os.path.exists(json_path):
+                    try:
+                        with open(json_path, "r", encoding="utf-8") as f:
+                            group_data = json.load(f)
+                            metadata.update(group_data)
+                    except Exception as e:
+                        print(f"Error al leer el archivo metadata.json en la carpeta '{folder}': {e}")
+        
+                catalog.append(metadata)
+        
+        return catalog
+        

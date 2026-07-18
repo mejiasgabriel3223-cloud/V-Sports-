@@ -54,8 +54,6 @@ class MainMenu:
                     # CORRECCIÓN: Volvemos a poner la lógica para lanzar el juego
                     if self.games_list:
                         selected = self.games_list[self.selected_index]
-                        if selected.get("ghost"):
-                            return None
                         return {"action": "LAUNCH", "game_data": selected}
                         
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -74,7 +72,7 @@ class MainMenu:
 
     def draw(self, screen: pygame.Surface) -> None:
         background = AssetManager.get_asset("menu_background")
-        if background:
+        if background and isinstance(background, pygame.surface.Surface):
             screen.blit(pygame.transform.scale(background, (Settings.S_WIDTH, Settings.S_HEIGHT)), (0, 0))
         else:
             screen.fill(Settings.BACKGROUND_COLOR)
@@ -128,7 +126,7 @@ class MainMenu:
             authors = selected.get("authors", [])
             group = selected.get("group_number", "")
 
-            cover = AssetManager.get_cover(selected.get("id", ""))
+            cover = AssetManager.get_cover(selected.get("folder", ""))
             cover = pygame.transform.scale(cover, (380, 260))
             cover_x = Settings.S_WIDTH - 420
             cover_y = 120

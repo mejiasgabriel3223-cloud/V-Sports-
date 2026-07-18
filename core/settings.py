@@ -1,6 +1,5 @@
 import os
 
-
 class Settings:
     TITLE = "V-Sports Launcher"
     S_WIDTH = 1280

@@ -45,18 +45,21 @@ class AssetManager:
     @classmethod
     def load_game_covers(cls, games: List[dict]) -> None:
         for game in games:
-            cover_path = game.get("cover_path")
-            if cover_path and os.path.exists(cover_path):
-                cls._covers[game["id"]] = pygame.image.load(cover_path).convert_alpha()
-                continue
+            game_folder_path = game.get("folder_path")
+            if game_folder_path and os.path.exists(game_folder_path):
+                cover_path = os.path.join(game_folder_path, "assets", "cover") #El cover del juego debe estar en una carpeta cover dentro de assets
+                
+                if os.path.exists(cover_path):
+                    cls._covers[game["folder"]] = pygame.image.load(cover_path).convert_alpha()
+                    continue
 
-            alt_path = cls._find_cover_alternative(cover_path) if cover_path else None
-            if alt_path:
-                cls._covers[game["id"]] = pygame.image.load(alt_path).convert_alpha()
-                continue
+                alt_path = cls._find_cover_alternative(cover_path) if cover_path else None
+                if alt_path:
+                    cls._covers[game["folder"]] = pygame.image.load(alt_path).convert_alpha()
+                    continue
 
-            cls._covers[game["id"]] = pygame.Surface((200, 120))
-            cls._covers[game["id"]].fill((32, 48, 72))
+                cls._covers[game["folder"]] = pygame.Surface((200, 120))
+                cls._covers[game["folder"]].fill((32, 48, 72))
 
     @classmethod
     def _find_cover_alternative(cls, cover_path: Optional[str]) -> Optional[str]:
@@ -81,5 +84,5 @@ class AssetManager:
         return pygame.font.Font(None, size)
 
     @classmethod
-    def get_cover(cls, game_id: str) -> pygame.Surface:
-        return cls._covers.get(game_id, pygame.Surface((200, 120)))
+    def get_cover(cls, folder: str) -> pygame.Surface:
+        return cls._covers.get(folder, pygame.Surface((200, 120)))

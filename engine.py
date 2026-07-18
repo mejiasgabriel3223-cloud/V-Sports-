@@ -1,152 +1,69 @@
+import os
+import sys
 import pygame
-from core.settings import Settings
-from core.managers.asset_manager import AssetManager
-from core.managers.game_launcher import GameLauncher
-from core.managers.sound_player import SoundPlayer
-from ui.screens import BootScreen, MainMenu, StartScreen
-
+import subprocess
 
 class Engine:
-    def __init__(self, found_games):
-        pygame.init()
+    def __init__(self, games_path):
+        self.GAMES_FOLDER = games_path
 
+
+    def launch_game(self, game_data):
+        """
+        Gestiona el ciclo de apagado de pantalla del launcher e invoca el juego.
+        El flujo se detiene aqui hasta que se cierre la ventana del juego
+        """
+        folder = game_data["folder"]
+        title = game_data["title"]
+
+        #Construimos las rutas universales utilizando el directorio inyectado
+        main_path = os.path.join(self.GAMES_FOLDER, folder, "main.py")
+        working_directory = os.path.dirname(main_path)
+
+        print(f"Apagando el launcher para inicializar el juego '{title}'")
+
+        #Apagamos la ventana del launcher, y pausamos el audio
         if pygame.mixer.get_init():
-            pygame.mixer.stop()
-            pygame.mixer.music.stop()
+            pygame.mixer.music.pause()
+        
+        pygame.display.quit()
+        
+        try:
+            #Lanza la ventana independiente. Si hay errores de ejecucion saltaran en su propia ventana de terminal
+            self._invoke_game_subprocess(main_path, working_directory)
+            return True
+        except Exception as e:
+            print(f"Error critico de sistema al ejecutar subproceso: {e}")
+            return False
+        finally:
+            print(f"Reinicializando el launcher")
 
-        pygame.display.set_caption(Settings.TITLE)
-        self.screen = pygame.display.set_mode((Settings.S_WIDTH, Settings.S_HEIGHT))
-        self.clock = pygame.time.Clock()
-
-        AssetManager.load_all_assets()
-        AssetManager.load_game_covers(found_games)
-
-        self.menu_music_path = SoundPlayer.play_music()
-
-        self.games_list = found_games
-        self.launcher_manager = GameLauncher()
-        self.active_game = None
-
-        self.screens = {
-            "BOOT": BootScreen(),
-            "START": StartScreen(),
-            "MAIN_MENU": MainMenu(self.games_list),
-        }
-
-        self.current_state = "START"
-        self.running = True
-
-    def handle_events(self):
-        events = pygame.event.get()
-
-        for event in events:
-            if event.type == pygame.QUIT:
-                self.running = False
-                return
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F12 and self.current_state == "IN_GAME":
-                    if self.active_game:
-                        pygame.mouse.set_visible(True)
-                        self.active_game._stop_context()
-
-        if self.current_state == "IN_GAME" and self.active_game:
-            if hasattr(self.active_game, "estado_actual") and self.active_game.estado_actual == "MENU":
-                for event in events:
-                    pygame.event.post(event)
-            else:
-                if hasattr(self.active_game, "handle_events"):
-                    self.active_game.handle_events(events)
-        else:
-            result = self.screens[self.current_state].handle_events(events)
-            if result:
-                self._process_screen_result(result)
-
-    def _process_screen_result(self, result):
-        if result == "QUIT":
-            self.running = False
-        elif isinstance(result, dict) and result.get("action") == "LAUNCH":
-            self._start_game_session(result.get("game_data"))
-        elif result in self.screens:
-            self.current_state = result
-
-    def update(self, dt):
-        if self.current_state == "IN_GAME" and self.active_game:
-            try:
-                self.active_game.update(dt)
-                active_running = getattr(self.active_game, "_running", None)
-                if active_running is None:
-                    active_running = getattr(self.active_game, "running", True)
-                if not active_running:
-                    self._reset_to_menu()
-            except Exception as e:
-                print(f"Error: {e}")
-                self._reset_to_menu()
-            return
-
-        result = self.screens[self.current_state].update(dt)
-
-        if result:
-            if result == "QUIT":
-                self.running = False
-            elif isinstance(result, dict) and result.get("action") == "LAUNCH":
-                self._start_game_session(result.get("game_data"))
-            elif result in self.screens:
-                self.current_state = result
-
-    def _start_game_session(self, game_data):
-        if pygame.mixer.get_init():
-            try:
-                pygame.mixer.music.stop()
-            except Exception:
-                pass
-
-        instance = self.launcher_manager.start(game_data)
-
-        if instance:
-            if hasattr(instance, "_inject_context"):
-                instance._inject_context(self.screen)
-            self.active_game = instance
-            self.current_state = "IN_GAME"
-        else:
-            print(f"Fail: {game_data.get('title')}")
-
-    def _reset_to_menu(self):
-        if self.active_game:
-            if hasattr(self.active_game, "_stop_context"):
-                self.active_game._stop_context()
-            self.launcher_manager.stop()
+            pygame.display.init()
 
             if pygame.mixer.get_init():
-                try:
-                    pygame.mixer.music.stop()
-                except Exception:
-                    pass
+                pygame.mixer.music.unpause
+            
+            #Vaciamos la cola de eventos al regresar del juego
+            pygame.event.clear()
 
-            SoundPlayer.stop_all()
+    def _invoke_game_subprocess(self, main_path, working_directory):
+        "Abre una ventana de comandos independiente segun el sistema operativo"
+        "para ejecutar el juego solicitado de forma aislada como subproceso"
+        
+        #MANEJO DE SUBPORCESOS MULTIPLATAFORMA
 
-            pygame.mouse.set_visible(True)
-
-            self.active_game = None
-            self.current_state = "MAIN_MENU"
-            self.screen = pygame.display.set_mode((Settings.S_WIDTH, Settings.S_HEIGHT))
-            pygame.display.set_caption(Settings.TITLE)
-            if self.menu_music_path:
-                SoundPlayer.play_music(self.menu_music_path)
-            else:
-                SoundPlayer.play_music()
-
-    def draw(self):
-        if self.current_state == "IN_GAME" and self.active_game:
-            self.active_game.draw()
+        #Windows, usa la api nativa para duplicar y abrir consolas independientes
+        if sys.platform == "win32":
+            subprocess.run(
+                [sys.executable, main_path],
+                cwd=working_directory,
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+        #Caso para MacOS o Linux, se ejecuta el proceso de python directamente en el hilo actual del launcher
+        #Por falta de api nativa para creacion de una terminal nueva que congele los procesos del launcher
         else:
-            self.screens[self.current_state].draw(self.screen)
-        pygame.display.flip()
-
-    def run(self):
-        while self.running:
-            dt = self.clock.tick(Settings.FPS) / 1000.0
-            self.handle_events()
-            self.update(dt)
-            self.draw()
-
-        pygame.quit()
+            subprocess.run(
+                [sys.executable, main_path],
+                cwd=working_directory
+            )
+            
