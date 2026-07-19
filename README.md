@@ -1,102 +1,129 @@
 # V-Sports Launcher
 
-Launcher modular para ejecutar juegos en un entorno común, con separación clara de responsabilidades.
+V-Sports Launcher es una interfaz centralizada para descubrir, mostrar y ejecutar juegos desde un mismo entorno. El proyecto está pensado como un lanzador modular: el menú presenta los juegos disponibles, el motor se encarga de iniciar cada uno en su propia ventana y el sistema de assets gestiona los recursos visuales y de audio.
 
-## Estructura de archivos
+## Qué hace el launcher
 
-- `main.py`  
-  Punto de entrada principal del proyecto. Inicializa el escáner de juegos y arranca el motor.
+El flujo general del programa es el siguiente:
 
-- `engine.py`  
-  Controla el ciclo principal de Pygame: manejo de eventos, actualización, dibujo y cambio de estados.
+1. El archivo principal inicia la aplicación.
+2. El escáner busca juegos dentro de la carpeta de juegos del proyecto.
+3. El menú lee ese catálogo y muestra información como título, descripción, autores y portada.
+4. Cuando el usuario selecciona un juego, el motor lo lanza como un subproceso independiente.
+5. Al volver, el launcher reinicia su interfaz y reanuda la música del menú.
 
-- `requirements.txt`  
-  Dependencias del proyecto.
+## Cómo funciona internamente
 
-- `core/settings.py`  
-  Configuración global del launcher, resolución fija 1280x720 y FPS 60.
+- main.py
+  Es el punto de entrada del proyecto. Ajusta la ruta raíz, prepara el entorno y crea una instancia del launcher.
 
-- `core/managers/asset_manager.py`  
-  Carga y mantiene assets globales como fuentes y portadas de juegos.
+- launcher.py
+  Coordina la interfaz del launcher, el estado actual de pantalla y la solicitud de ejecución del juego seleccionado.
 
-- `core/managers/sound_player.py`  
-  Gestión básica de audio para detener y reproducir sonidos.
+- engine.py
+  Se encarga de abrir el juego elegido como proceso independiente. Esto permite que cada juego corra en su propia ventana sin mezclar su ciclo de ejecución con el del launcher.
 
-- `core/managers/game_launcher.py`  
-  Abstracción para iniciar y detener instancias de juego.
+- core/managers/game_scanner.py
+  Recorre la carpeta de juegos y construye un catálogo con los metadatos de cada proyecto.
 
-- `core/managers/game_scanner.py`  
-  Escanea y devuelve metadatos de juegos disponibles. Actualmente es un placeholder para integrar más tarde.
+- core/managers/asset_manager.py
+  Carga fuentes, fondos y portadas para que el menú se vea correctamente.
 
-- `ui/screens/boot_screen.py`  
-  Pantalla de arranque inicial del launcher.
+- core/managers/sound_player.py
+  Gestiona la música y el audio del launcher.
 
-- `ui/screens/main_menu.py`  
-  Menú principal que lista juegos y envía la acción de lanzamiento.
+- ui/screens/
+  Contiene las pantallas del launcher: arranque, bienvenida y menú principal.
 
-- `ui/screens/__init__.py`  
-  Exporta los componentes de pantalla para importaciones limpias.
+## Requisitos
 
-## Cómo usar
+Instala las dependencias con:
 
-1. Instala dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Ejecuta el launcher:
-   ```bash
-   python main.py
-   ```
-
-3. Agrega juegos en `core/managers/game_scanner.py` y, si quieres, registra instancias válidas en `core/managers/game_launcher.py`.
-
-## Notas
-
-- Resolución forzada en `core/settings.py`: `1280x720`.
-- El bucle principal usa `Settings.FPS` y `pygame.time.Clock()` para mantener 60 FPS.
-- La arquitectura está lista para crecer con más gestores, pantallas e integraciones.
-
-## Cómo crear juegos compatibles
-
-Sigue estas recomendaciones para que un juego sea reconocido y gestionado por el launcher:
-
-- Heredar de `BaseGame` (exportado desde el paquete `games`) o seguir su contrato: implementar los métodos `update(dt)`, `draw()` y opcionalmente `handle_events(events)`.
-- Definir metadatos en el módulo: `GAME_METADATA` con claves mínimas: `id`, `title`, `description`, `authors`, `group_number`, `cover_path`.
-- Exportar la clase del juego con el nombre del juego o `GAME_CLASS` (el escáner busca `CarreraDeObstaculos` o `GAME_CLASS`).
-- No controles de resolución o reloj dentro del juego: use `self.screen` (inyectada por `_inject_context(screen)`) para dibujar y confíe en `Settings`/`Engine` para el `FPS`.
-- Recomendado: declarar atributos de clase opcionales `S_WIDTH`, `S_HEIGHT`, `FPS` si desea documentar expectativas; el `GameLauncher` fuerza estos valores a los de `core.settings.Settings`.
-- Evitar constantes de módulo `SCREEN_W`/`SCREEN_H`; use `self.S_WIDTH`/`self.S_HEIGHT`.
-
-Ejemplo mínimo:
-
-```python
-from games import BaseGame
-
-GAME_METADATA = {
-  'id': 'mi_juego',
-  'title': 'Mi Juego',
-  'description': 'Descripción breve',
-  'authors': ['Autor'],
-  'group_number': 1,
-  'cover_path': 'assets/covers/mi_juego.png',
-}
-
-class MiJuego(BaseGame):
-  def __init__(self):
-    super().__init__()
-    # usar self.S_WIDTH / self.S_HEIGHT
-
-  def handle_events(self, events):
-    pass
-
-  def update(self, dt):
-    pass
-
-  def draw(self):
-    if self.screen:
-      # dibujar en self.screen
-      pass
+```bash
+pip install -r requirements.txt
 ```
 
-Con esto el launcher podrá detectar, ajustar parámetros y ejecutar tu juego de forma coherente.
+Y ejecuta el proyecto con:
+
+```bash
+python main.py
+```
+
+## Cómo agregar juegos
+
+Por ahora, el launcher detecta los juegos que existen dentro de la carpeta games del proyecto. Para añadir uno nuevo, sigue estos pasos:
+
+1. Crea una carpeta nueva dentro de games con el nombre del juego.
+2. Añade un archivo main.py dentro de esa carpeta. Ese archivo será el punto de entrada del juego.
+3. Añade un archivo metadata.json con la información del juego. La estructura mínima puede ser:
+
+```json
+{
+  "title": "Mi Juego",
+  "description": "Descripción breve del juego",
+  "authors": ["Autor 1", "Autor 2"],
+  "group_number": 1,
+  "controls": "Teclas de movimiento"
+}
+```
+
+4. Coloca la portada del juego en la ruta:
+
+```text
+games/<nombre_del_juego>/assets/cover/launcher_cover
+```
+
+El launcher intentará cargar esa imagen como portada. Si no existe, usará una portada genérica.
+
+5. Asegúrate de que la carpeta del juego contenga un main.py. Sin ese archivo, no será detectada por el escáner.
+
+## Formato esperado para los juegos
+
+Para que un juego sea compatible con el launcher, es recomendable que:
+
+- tenga un archivo main.py como punto de entrada;
+- incluya un metadata.json con información básica;
+- use la carpeta assets/cover/launcher_cover para la portada si quieres que se vea en el menú;
+- esté preparado para ejecutarse de forma independiente, ya que el launcher lo abrirá en un subproceso.
+
+## Ejemplo incluido: Carrera de Obstáculos
+
+El proyecto ya incluye un juego compatible dentro de la carpeta games: Carrera de Obstáculos del Grupo 7 del Jueves como ejemplo. Sirve como referencia para ver cómo debe organizarse un juego nuevo.
+
+Su estructura básica es la siguiente:
+
+```text
+games/
+└── Carrera_de_Obstaculos/
+    ├── main.py
+    ├── metadata.json
+    ├── entities.py
+    ├── game.py
+    ├── menu.py
+    └── assets/
+        └── cover/
+```
+
+Este ejemplo muestra cómo un juego puede tener:
+
+- un archivo main.py como punto de entrada;
+- un metadata.json para los datos que muestra el launcher;
+- módulos adicionales como entities.py, game.py y menu.py para separar la lógica;
+- una carpeta assets/cover para la portada utilizada en el menú.
+
+## Futuro: lectura directa desde el repositorio
+
+La versión actual escanea la carpeta local games del proyecto. En una actualización futura, el sistema podrá leer los juegos directamente desde el repositorio remoto o desde una ruta de origen configurable.
+
+Eso implicará dos mejoras principales:
+
+- el escáner ya no dependerá únicamente de la carpeta local del proyecto;
+- el launcher podrá mostrar juegos disponibles en el repositorio sin necesidad de copiarlos manualmente a la carpeta local.
+
+En esa futura implementación, la lógica de detección seguirá siendo similar: se identificará cada juego por su carpeta, su archivo main.py y su metadata.json, pero la fuente de datos será el repositorio en lugar del directorio local.
+
+## Notas técnicas
+
+- La resolución base del launcher es 1280x720 y el FPS objetivo es 60.
+- El menú usa el catálogo generado por el escáner para mostrar los juegos.
+- El motor lanza cada juego como un proceso independiente para mantener la interfaz principal estable.

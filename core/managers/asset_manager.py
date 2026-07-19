@@ -7,12 +7,15 @@ from core.settings import Settings
 
 
 class AssetManager:
+    """Centraliza la carga de recursos gráficos y de audio del launcher."""
+
     _assets: Dict[str, object] = {}
     _covers: Dict[str, pygame.Surface] = {}
     _font_path: Optional[str] = None
 
     @classmethod
     def load_all_assets(cls) -> None:
+        """Carga la fuente principal y las imágenes de fondo usadas por las pantallas."""
         if not pygame.get_init():
             pygame.init()
         if not pygame.font.get_init():
@@ -32,6 +35,7 @@ class AssetManager:
             except pygame.error:
                 pass
             cls._assets["menu_background"] = pygame.transform.scale(background, (Settings.S_WIDTH, Settings.S_HEIGHT))
+
         if os.path.exists(Settings.MAIN_TITLE_IMAGE):
             title_image = pygame.image.load(Settings.MAIN_TITLE_IMAGE)
             try:
@@ -44,11 +48,12 @@ class AssetManager:
 
     @classmethod
     def load_game_covers(cls, games: List[dict]) -> None:
+        """Asocia una portada visual a cada juego detectado por el escáner."""
         for game in games:
             game_folder_path = game.get("folder_path")
-            print(f"{game_folder_path}")
             if game_folder_path and os.path.exists(game_folder_path):
-                cover_path = os.path.join(game_folder_path, "assets", "cover", "launcher_cover") #El cover del juego debe estar en una carpeta cover dentro de assets, teniendo el nombre launcher_cover
+                # El cover del juego debe estar en la carpeta assets/cover con el nombre launcher_cover.
+                cover_path = os.path.join(game_folder_path, "assets", "cover", "launcher_cover")
 
                 if os.path.exists(cover_path):
                     cls._covers[game["folder"]] = pygame.image.load(cover_path).convert_alpha()
@@ -64,6 +69,7 @@ class AssetManager:
 
     @classmethod
     def _find_cover_alternative(cls, cover_path: Optional[str]) -> Optional[str]:
+        """Busca una portada en formatos png/jpg/jpeg si no existe el archivo exacto."""
         if not cover_path:
             return None
 
