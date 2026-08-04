@@ -11,3 +11,6 @@
 	path = games/Lunes_8
 	url = https://github.com/orlxjr/crazygolf.git
 	branch = main
+[submodule "games/Lunes_7"]
+	path = games/Lunes_7
+	url = https://github.com/Abelardodrika/juego_dardos.git
