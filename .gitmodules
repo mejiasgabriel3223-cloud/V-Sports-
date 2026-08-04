@@ -1,0 +1,9 @@
+[submodule "games/Jueves_7"]
+	path = games/Jueves_7
+	url = https://github.com/mejiasgabriel3223-cloud/Running_Time
+[submodule "games/Jueves_2"]
+	path = games/Jueves_2
+	url = https://github.com/Kurui02/Proyecto_MMA
+[submodule "games/Lunes_1"]
+	path = games/Lunes_1
+	url = https://github.com/CesarMoya27/Swim-Rush.git
