@@ -9,6 +9,10 @@
 	path = games/Jueves_7
 	url = https://github.com/mejiasgabriel3223-cloud/Running_Time.git
 	branch = main
+[submodule "games/Jueves_3"]
+	path = games/Jueves_3
+	url = https://github.com/Lui525/Volley-Bounce
+	branch = main
 [submodule "games/Jueves_2"]
 	path = games/Jueves_2
 	url = https://github.com/Kurui02/Proyecto_MMA.git
