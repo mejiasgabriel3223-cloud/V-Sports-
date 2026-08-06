@@ -16,6 +16,6 @@
 [submodule "games/Lunes_3"]
 	path = games/Lunes_3
 	url = https://github.com/Juan-Diego2020/Juego-de-Taller-de-Abstraccion-Lanzamiento-de-Jabalina.git
-[submodule "Lunes_8"]
-	path = Lunes_8
+[submodule "games/Lunes_8"]
+	path = games/Lunes_8
 	url = https://github.com/orlxjr/cg.git
