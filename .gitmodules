@@ -29,3 +29,6 @@
 	path = games/Jueves_3
 	url = https://github.com/Lui525/Volley-Bounce
 	branch = main
+[submodule "games/Jueves_8"]
+	path = games/Jueves_8
+	url = https://github.com/JoseangelCR12/Ping-Pong
