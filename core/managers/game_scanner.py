@@ -23,13 +23,12 @@ class GameScanner:
             if os.path.isdir(folder_path) and "main.py" in os.listdir(folder_path):
                 json_path = os.path.join(folder_path, "metadata.json")
 
-                # Metadatos base por si el juego no define todos los campos.
                 metadata = {
                     "folder": folder,
                     "folder_path": folder_path,
                     "title": folder.replace("_", " "),
                     "description": "No se encontró descripción en metadata.json",
-                    "authors": "Desconocido",
+                    "authors": ["Desconocido"],
                     "group_number": "Desconocido",
                     "controls": "No fueron especificados los controles en metadata.json",
                 }
@@ -42,7 +41,34 @@ class GameScanner:
                     except Exception as e:
                         print(f"Error al leer el archivo metadata.json en la carpeta '{folder}': {e}")
 
+                folder_parts = folder.split('_')
+                if len(folder_parts) >= 2 and folder_parts[0].capitalize() in ["Lunes", "Jueves"]:
+                    metadata["group_number"] = f"{folder_parts[0].capitalize()} {folder_parts[1]}"
+
                 catalog.append(metadata)
 
+        def sort_key(game_meta):
+            folder_name = game_meta.get("folder", "")
+            parts = folder_name.split("_")
+            
+            day_val = 2 
+            num_val = 999
+            
+            if len(parts) >= 2:
+                day_str = parts[0].capitalize()
+                
+                if day_str == "Lunes":
+                    day_val = 0
+                elif day_str == "Jueves":
+                    day_val = 1
+                
+                try:
+                    num_val = int(parts[1])
+                except ValueError:
+                    pass
+                    
+            return (num_val, day_val)
+
+        catalog.sort(key=sort_key)
+
         return catalog
-        

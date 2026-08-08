@@ -22,19 +22,23 @@ class MainMenu:
         self.scroll_offset = 0
 
     def _render_multiline(self, screen, text, font, color, x, y, max_width, line_height):
-        words = text.split()
-        line = ""
-        for word in words:
-            test_line = (line + " " + word).strip()
-            if font.size(test_line)[0] <= max_width:
-                line = test_line
-            else:
+        paragraphs = str(text).split('\n')
+        for paragraph in paragraphs:
+            words = paragraph.split(' ')
+            line = ""
+            for word in words:
+                if not word: 
+                    continue
+                test_line = (line + " " + word).strip()
+                if font.size(test_line)[0] <= max_width:
+                    line = test_line
+                else:
+                    screen.blit(font.render(line, True, color), (x, y))
+                    y += line_height
+                    line = word
+            if line:
                 screen.blit(font.render(line, True, color), (x, y))
                 y += line_height
-                line = word
-        if line:
-            screen.blit(font.render(line, True, color), (x, y))
-            y += line_height
         return y
 
     def handle_events(self, events):
@@ -51,7 +55,6 @@ class MainMenu:
                     if self.quit_button_rect.collidepoint(mouse_pos):
                         return "QUIT"
                     
-                    # CORRECCIÓN: Volvemos a poner la lógica para lanzar el juego
                     if self.games_list:
                         selected = self.games_list[self.selected_index]
                         return {"action": "LAUNCH", "game_data": selected}
@@ -117,13 +120,12 @@ class MainMenu:
             ),
         )
 
-        # CORRECCIÓN: Verificamos que haya juegos y declaramos 'selected' antes de sacar su info
         if self.games_list:
             selected = self.games_list[self.selected_index]
             
             title_text = selected.get("title", "")
             description = selected.get("description", "")
-            authors = selected.get("authors", [])
+            authors = selected.get("authors", ["Desconocido"])
             group = selected.get("group_number", "")
 
             cover = AssetManager.get_cover(selected.get("folder", ""))
@@ -141,14 +143,26 @@ class MainMenu:
             title_font = pygame.font.Font(None, 40)
             text_font = _get_font(20)
 
-            screen.blit(title_font.render(title_text, True, Settings.HIGHLIGHT_COLOR), (info_x, info_y))
-            info_y += 44
+            title_lines = str(title_text).split('\n')
+            for t_line in title_lines:
+                screen.blit(title_font.render(t_line, True, Settings.HIGHLIGHT_COLOR), (info_x, info_y))
+                info_y += 36
+            info_y += 8
+
             info_y = self._render_multiline(screen, description, text_font, Settings.TEXT_COLOR, info_x, info_y, 360, 26)
             info_y += 8
+            
             screen.blit(text_font.render("Autores:", True, Settings.TEXT_COLOR), (info_x, info_y))
             info_y += 32
-            screen.blit(text_font.render(", ".join(authors), True, Settings.TEXT_COLOR), (info_x, info_y))
-            info_y += 40
+            
+            if isinstance(authors, list):
+                authors_str = ", ".join([str(a) for a in authors])
+            else:
+                authors_str = str(authors)
+            
+            info_y = self._render_multiline(screen, authors_str, text_font, Settings.TEXT_COLOR, info_x, info_y, 360, 26)
+            
+            info_y += 14 
             screen.blit(text_font.render(f"Grupo: {group}", True, Settings.TEXT_COLOR), (info_x, info_y))
 
         hint_font = _get_font(20)
