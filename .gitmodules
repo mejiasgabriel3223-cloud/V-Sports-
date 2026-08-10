@@ -32,3 +32,21 @@
 [submodule "games/Jueves_8"]
 	path = games/Jueves_8
 	url = https://github.com/JoseangelCR12/Ping-Pong
+[submodule "games/Jueves_4"]
+	path = games/Jueves_4
+	url = https://github.com/AlcArt-25/Motocross-modulo-4-main.git
+[submodule "games/Jueves_9"]
+	path = games/Jueves_9
+	url = https://github.com/Sebato785/Head_soccer_grupo_9_nuevito.git
+[submodule "games/Jueves_1"]
+	path = games/Jueves_1
+	url = https://github.com/FabiMG17/Taller1_jueves.git
+[submodule "games/Jueves_6"]
+	path = games/Jueves_6
+	url = https://github.com/walberparker/Bowling.git
+[submodule "games/Lunes_4"]
+	path = games/Lunes_4
+	url = https://github.com/endermanu11/Court-Kings.git
+[submodule "games/Lunes_6"]
+	path = games/Lunes_6
+	url = https://github.com/pedrokmv0710/Pool-8-Billar.git
