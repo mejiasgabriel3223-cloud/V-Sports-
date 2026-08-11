@@ -35,9 +35,6 @@
 [submodule "games/Jueves_4"]
 	path = games/Jueves_4
 	url = https://github.com/AlcArt-25/Motocross-modulo-4-main.git
-[submodule "games/Jueves_9"]
-	path = games/Jueves_9
-	url = https://github.com/Sebato785/Head_soccer_grupo_9_nuevito.git
 [submodule "games/Jueves_1"]
 	path = games/Jueves_1
 	url = https://github.com/FabiMG17/Taller1_jueves.git
@@ -53,3 +50,9 @@
 [submodule "games/Lunes_9"]
 	path = games/Lunes_9
 	url = https://github.com/Chris15-10/Pixel-GP.git
+[submodule "games/Jueves_9"]
+	path = games/Jueves_9
+	url = https://github.com/Frednat23/Head_Soccer_grupo9_acomodado
+[submodule "games/Jueves_5"]
+	path = games/Jueves_5
+	url = https://github.com/OrlianaA/Bici-game-Pygame-.git
